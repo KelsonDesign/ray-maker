@@ -1,0 +1,291 @@
+/* =========================================================================
+   Kaia Cacao — Foundations
+   Colors, type, fonts, semantic tokens
+   ========================================================================= */
+
+/* ---- Fonts ---------------------------------------------------------------
+   Red Hat Display (provided): all sans-serif UI — labels, body, buttons, nav.
+   Cormorant Garamond (Google Fonts): the elegant high-contrast serif used in
+     the wordmark "KAIA CACAO". Close match to the logo's display face.
+     ⚠ FONT SUBSTITUTION — flagged in README. Please confirm or upload the
+       actual brand display serif if it's licensed.
+   --------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "Red Hat Display";
+  src: url("fonts/RedHatDisplay-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Red Hat Display";
+  src: url("fonts/RedHatDisplay-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Red Hat Display";
+  src: url("fonts/RedHatDisplay-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ---- Brand palette (from approved swatch sheet) ----------------------- */
+  --kc-ink:        #2c3538;  /* near-black slate, deepest text & ground */
+  --kc-teal:       #405358;  /* signature deep teal — primary brand surface */
+  --kc-stone:      #a0a9ac;  /* cool warm-gray — secondary text, dividers */
+  --kc-rose:       #d9a597;  /* dusty rose / clay — wordmark, accents */
+  --kc-cream:      #ecdfc7;  /* warm bone / latte — cards, soft backgrounds */
+  --kc-amber:      #f2b66f;  /* honey amber — CTA, gold-hour highlight */
+
+  /* ---- Tonal extensions (oklch, harmonized) ----------------------------- */
+  --kc-teal-900:   #1f2a2d;
+  --kc-teal-700:   #324247;
+  --kc-teal-500:   #405358;
+  --kc-teal-300:   oklch(0.62 0.022 210);   /* #6a797d ~ */
+  --kc-teal-100:   oklch(0.86 0.012 210);
+
+  --kc-rose-700:   oklch(0.62 0.06 28);     /* deeper clay */
+  --kc-rose-500:   #d9a597;
+  --kc-rose-200:   oklch(0.88 0.03 28);     /* whisper rose */
+
+  --kc-cream-200:  oklch(0.96 0.018 80);    /* page bg, lightest */
+  --kc-cream-500:  #ecdfc7;
+  --kc-cream-700:  oklch(0.82 0.04 75);
+
+  --kc-amber-500:  #f2b66f;
+  --kc-amber-700:  oklch(0.70 0.13 65);
+
+  /* ---- Semantic surface / text ----------------------------------------- */
+  --kc-bg:         var(--kc-cream-200);     /* default page */
+  --kc-bg-alt:     var(--kc-cream-500);     /* card / inset */
+  --kc-bg-deep:    var(--kc-teal-500);      /* hero / footer */
+  --kc-bg-night:   var(--kc-ink);
+
+  --kc-fg:         var(--kc-ink);           /* primary text on light */
+  --kc-fg-muted:   var(--kc-teal-300);      /* secondary text on light */
+  --kc-fg-soft:    var(--kc-stone);         /* tertiary / metadata */
+  --kc-fg-on-deep: var(--kc-rose);          /* primary text on teal */
+  --kc-fg-on-deep-soft: var(--kc-cream-500);
+
+  --kc-line:       oklch(0.85 0.02 75);     /* hairline on cream */
+  --kc-line-deep:  oklch(0.45 0.02 210);    /* hairline on teal */
+
+  --kc-accent:     var(--kc-rose);
+  --kc-accent-warm:var(--kc-amber);
+  --kc-cta-bg:     var(--kc-ink);
+  --kc-cta-fg:     var(--kc-cream-200);
+
+  /* ---- Type families --------------------------------------------------- */
+  --kc-font-display: "Cormorant Garamond", "Cormorant", "EB Garamond", Georgia, serif;
+  --kc-font-sans:    "Red Hat Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --kc-font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---- Type scale (display: serif, ui: sans) --------------------------- */
+  --kc-display-1: 96px;   /* hero wordmark style */
+  --kc-display-2: 72px;
+  --kc-h1:        48px;
+  --kc-h2:        36px;
+  --kc-h3:        28px;
+  --kc-h4:        22px;
+  --kc-body-lg:   20px;
+  --kc-body:      17px;
+  --kc-body-sm:   15px;
+  --kc-caption:   13px;
+  --kc-eyebrow:   12px;   /* uppercase, letter-spaced */
+
+  --kc-leading-tight: 1.05;
+  --kc-leading-snug:  1.2;
+  --kc-leading-body:  1.55;
+  --kc-leading-loose: 1.75;
+
+  --kc-tracking-tight: -0.01em;
+  --kc-tracking-display: -0.02em;
+  --kc-tracking-eyebrow: 0.18em;
+
+  /* ---- Spacing (4-step) ------------------------------------------------ */
+  --kc-space-1: 4px;
+  --kc-space-2: 8px;
+  --kc-space-3: 12px;
+  --kc-space-4: 16px;
+  --kc-space-5: 24px;
+  --kc-space-6: 32px;
+  --kc-space-7: 48px;
+  --kc-space-8: 64px;
+  --kc-space-9: 96px;
+  --kc-space-10: 128px;
+
+  /* ---- Radii ----------------------------------------------------------- */
+  --kc-r-sm:    4px;
+  --kc-r-md:    8px;
+  --kc-r-lg:    16px;
+  --kc-r-xl:    24px;
+  --kc-r-pill:  999px;
+  --kc-r-card:  20px;
+
+  /* ---- Shadows (soft, warm) ------------------------------------------- */
+  --kc-shadow-xs: 0 1px 2px rgba(44, 53, 56, 0.06);
+  --kc-shadow-sm: 0 2px 8px rgba(44, 53, 56, 0.06), 0 1px 2px rgba(44, 53, 56, 0.04);
+  --kc-shadow-md: 0 6px 20px rgba(44, 53, 56, 0.08), 0 2px 4px rgba(44, 53, 56, 0.04);
+  --kc-shadow-lg: 0 18px 40px rgba(44, 53, 56, 0.12), 0 4px 10px rgba(44, 53, 56, 0.06);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --kc-ease:        cubic-bezier(0.22, 1, 0.36, 1);    /* gentle ease-out */
+  --kc-ease-in:     cubic-bezier(0.32, 0, 0.67, 0);
+  --kc-dur-fast:    160ms;
+  --kc-dur:         260ms;
+  --kc-dur-slow:    520ms;
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --kc-content-w:    1200px;
+  --kc-narrow-w:     680px;
+}
+
+/* ============================================================
+   Semantic tag baseline — opt in by setting class "kc" on root
+   ============================================================ */
+.kc, .kc * { box-sizing: border-box; }
+
+.kc {
+  font-family: var(--kc-font-sans);
+  font-size: var(--kc-body);
+  line-height: var(--kc-leading-body);
+  color: var(--kc-fg);
+  background: var(--kc-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.kc h1, .kc .kc-h1 {
+  font-family: var(--kc-font-display);
+  font-weight: 500;
+  font-size: var(--kc-h1);
+  line-height: var(--kc-leading-tight);
+  letter-spacing: var(--kc-tracking-display);
+  color: var(--kc-fg);
+}
+.kc h2, .kc .kc-h2 {
+  font-family: var(--kc-font-display);
+  font-weight: 500;
+  font-size: var(--kc-h2);
+  line-height: var(--kc-leading-snug);
+  letter-spacing: var(--kc-tracking-display);
+}
+.kc h3, .kc .kc-h3 {
+  font-family: var(--kc-font-display);
+  font-weight: 500;
+  font-size: var(--kc-h3);
+  line-height: var(--kc-leading-snug);
+}
+.kc h4, .kc .kc-h4 {
+  font-family: var(--kc-font-sans);
+  font-weight: 600;
+  font-size: var(--kc-h4);
+  line-height: var(--kc-leading-snug);
+  letter-spacing: var(--kc-tracking-tight);
+}
+
+.kc p, .kc .kc-p {
+  font-family: var(--kc-font-sans);
+  font-weight: 500;
+  font-size: var(--kc-body);
+  line-height: var(--kc-leading-body);
+  color: var(--kc-fg);
+  text-wrap: pretty;
+}
+
+.kc-display {
+  font-family: var(--kc-font-display);
+  font-weight: 500;
+  font-size: var(--kc-display-1);
+  line-height: var(--kc-leading-tight);
+  letter-spacing: var(--kc-tracking-display);
+}
+
+.kc-eyebrow {
+  font-family: var(--kc-font-sans);
+  font-weight: 600;
+  font-size: var(--kc-eyebrow);
+  letter-spacing: var(--kc-tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--kc-fg-muted);
+}
+
+.kc-caption {
+  font-family: var(--kc-font-sans);
+  font-weight: 500;
+  font-size: var(--kc-caption);
+  color: var(--kc-fg-soft);
+}
+
+.kc code, .kc .kc-mono {
+  font-family: var(--kc-font-mono);
+  font-size: 0.92em;
+  background: var(--kc-cream-500);
+  padding: 1px 6px;
+  border-radius: var(--kc-r-sm);
+}
+
+/* ---- Buttons (low-level baseline) -------------------------------------- */
+.kc-btn {
+  font-family: var(--kc-font-sans);
+  font-weight: 600;
+  font-size: var(--kc-body-sm);
+  letter-spacing: 0.02em;
+  padding: 14px 26px;
+  border-radius: var(--kc-r-pill);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--kc-dur-fast) var(--kc-ease),
+              background var(--kc-dur) var(--kc-ease),
+              color var(--kc-dur) var(--kc-ease),
+              border-color var(--kc-dur) var(--kc-ease);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kc-space-2);
+}
+.kc-btn:active { transform: scale(0.98); }
+
+.kc-btn--primary {
+  background: var(--kc-ink);
+  color: var(--kc-cream-200);
+}
+.kc-btn--primary:hover { background: var(--kc-teal-700); }
+
+.kc-btn--ghost {
+  background: transparent;
+  color: var(--kc-fg);
+  border-color: var(--kc-fg);
+}
+.kc-btn--ghost:hover {
+  background: var(--kc-ink);
+  color: var(--kc-cream-200);
+}
+
+.kc-btn--rose {
+  background: var(--kc-rose);
+  color: var(--kc-teal-700);
+}
+.kc-btn--rose:hover { background: var(--kc-rose-700); color: var(--kc-cream-200); }
+
+/* ---- Field baseline ---------------------------------------------------- */
+.kc-field {
+  font-family: var(--kc-font-sans);
+  font-size: var(--kc-body);
+  font-weight: 500;
+  background: transparent;
+  color: var(--kc-fg);
+  border: none;
+  border-bottom: 1px solid var(--kc-fg);
+  padding: 14px 4px;
+  outline: none;
+  width: 100%;
+}
+.kc-field::placeholder { color: var(--kc-fg-soft); }
+.kc-field:focus { border-bottom-color: var(--kc-rose); }

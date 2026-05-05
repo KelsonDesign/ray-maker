@@ -1,0 +1,1218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sunburst Configurator — Kaia Cacao</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--kc-font-sans);
+    background: var(--kc-cream-200);
+    color: var(--kc-fg);
+    overflow: hidden;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ---- Stage ---- */
+  .stage {
+    position: relative;
+    background: var(--kc-cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    --stage-fg: var(--kc-teal-700);
+    --stage-fg-muted: var(--kc-fg-muted);
+    --stage-chip-ring-inner: var(--kc-cream);
+    --stage-chip-border: rgba(44, 53, 56, 0.18);
+    transition: background 280ms var(--kc-ease);
+  }
+  .stage.stage--dark {
+    --stage-fg: #ecdfc7;
+    --stage-fg-muted: rgba(236, 223, 199, 0.62);
+    --stage-chip-ring-inner: rgba(0, 0, 0, 0.35);
+    --stage-chip-border: rgba(236, 223, 199, 0.22);
+  }
+  .stage-inner {
+    width: min(82vh, 82%);
+    aspect-ratio: 1 / 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stage svg { width: 100%; height: 100%; display: block; }
+
+  .stage-header {
+    position: absolute;
+    top: 28px;
+    left: 28px;
+    right: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    gap: 16px;
+    z-index: 5;
+  }
+  .stage-header > * { pointer-events: auto; }
+  .brand-mark {
+    color: var(--stage-fg);
+    display: inline-flex;
+    align-items: center;
+    transition: color 200ms var(--kc-ease);
+  }
+  .brand-mark svg { display: block; height: 28px; width: auto; }
+  .brand {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--stage-fg);
+    text-align: center;
+  }
+  .brand-title {
+    font-family: var(--kc-font-display);
+    font-size: 24px;
+    letter-spacing: 0.18em;
+    line-height: 1;
+  }
+  .brand-tagline {
+    font-family: var(--kc-font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--stage-fg-muted);
+    line-height: 1;
+    padding-left: 2px;
+  }
+  /* Stage palettes — anchored to bottom corners of the cream stage */
+  .stage-palette {
+    position: absolute;
+    bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: auto;
+    z-index: 5;
+  }
+  .stage-palette--bg { left: 28px; align-items: flex-start; }
+  .stage-palette--ray { right: 28px; align-items: flex-end; }
+  p.stage-palette-label {
+    font-family: var(--kc-font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--stage-fg);
+    margin: 0;
+  }
+  .stage-palette .colorchips { display: flex; gap: 8px; flex-wrap: wrap; max-width: 280px; }
+  .stage-palette--ray .colorchips { justify-content: flex-end; }
+  .stage-palette .stage-chip {
+    width: 26px; height: 26px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid var(--stage-chip-border);
+    transition: transform 160ms var(--kc-ease);
+    padding: 0;
+  }
+  .stage-palette .stage-chip:hover { transform: scale(1.1); }
+  .stage-palette .stage-chip.active {
+    box-shadow: 0 0 0 2px var(--stage-chip-ring-inner), 0 0 0 3px var(--stage-fg);
+  }
+  p.stage-palette-hex {
+    font-family: var(--kc-font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--stage-fg-muted);
+    margin: 0;
+  }
+
+  /* ---- Panel ---- */
+  .panel {
+    background: #2c3538;
+    border-left: 1px solid #2c3538;
+    color: #a0a9ac;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .panel-body {
+    padding: 22px 28px 22px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  .panel-footer {
+    padding: 16px 28px 22px;
+    background: #2c3538;
+    border-top: 1px solid rgba(160,169,172,0.16);
+    flex-shrink: 0;
+  }
+
+  .group { padding: 20px 0; }
+  .group:first-of-type { padding-top: 4px; }
+  .group:last-of-type { padding-bottom: 4px; }
+  p.group-label {
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--kc-rose);
+    margin: 0 0 20px;
+  }
+
+  .control + .control { margin-top: 20px; }
+  .control { margin-bottom: 0; }
+  .control-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .control-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #a0a9ac;
+  }
+  .control-value {
+    font-family: var(--kc-font-mono);
+    font-size: 12px;
+    color: rgba(160,169,172,0.72);
+    background: rgba(160,169,172,0.10);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .control-help {
+    font-size: 11px;
+    color: rgba(160,169,172,0.55);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* Slider */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 3px;
+    background: linear-gradient(to right, var(--kc-rose) 0%, var(--kc-rose) var(--p, 50%), rgba(160,169,172,0.22) var(--p, 50%), rgba(160,169,172,0.22) 100%);
+    border-radius: 2px;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 3px;
+    background: rgba(160,169,172,0.22);
+    border-radius: 2px;
+  }
+  input[type="range"]::-moz-range-progress {
+    height: 3px;
+    background: var(--kc-rose);
+    border-radius: 2px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 999px;
+    background: var(--kc-rose);
+    border: none;
+    box-shadow: none;
+    margin-top: -5.5px;
+    transition: transform 120ms var(--kc-ease);
+  }
+  input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.18); }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-radius: 999px;
+    background: var(--kc-rose);
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; }
+  .btn {
+    font-family: var(--kc-font-sans);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 200ms var(--kc-ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn--primary {
+    background: var(--kc-rose);
+    color: #2c3538;
+    flex: 1;
+  }
+  .btn--primary:hover { background: #e8b9ad; }
+  .btn--ghost {
+    background: transparent;
+    color: #a0a9ac;
+    border-color: rgba(160,169,172,0.45);
+  }
+  .btn--ghost:hover { background: rgba(160,169,172,0.10); color: #ecdfc7; border-color: #a0a9ac; }
+  .btn--icon {
+    padding: 10px 12px;
+    background: transparent;
+    color: rgba(160,169,172,0.72);
+    border: 1px solid rgba(160,169,172,0.30);
+  }
+  .btn--icon:hover { color: #ecdfc7; border-color: #a0a9ac; }
+
+  /* (chip styles live under .stage-palette \u2014 see top of stylesheet) */
+
+  /* (palette controls moved to stage corners) */
+
+  /* Favorites trigger (anchored in stage header, top-right of stage) */
+  .fav-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--stage-chip-border);
+    border-radius: 999px;
+    font-family: var(--kc-font-sans);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--stage-fg);
+    cursor: pointer;
+    transition: all 200ms var(--kc-ease);
+  }
+  .fav-trigger:hover { border-color: var(--stage-fg); transform: translateY(-1px); }
+  .fav-trigger-count {
+    font-family: var(--kc-font-mono);
+    font-size: 10px;
+    background: var(--stage-chip-ring-inner);
+    color: var(--stage-fg-muted);
+    padding: 2px 7px;
+    border-radius: 999px;
+    min-width: 20px;
+    text-align: center;
+  }
+  .fav-trigger.has-items {
+    border-color: var(--kc-rose);
+    color: var(--kc-rose);
+  }
+  .fav-trigger.has-items .fav-trigger-count {
+    background: var(--kc-rose);
+    color: #2c3538;
+  }
+
+  /* Drawer */
+  .drawer-scrim {
+    position: fixed; inset: 0;
+    background: rgba(44, 53, 56, 0.32);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 260ms var(--kc-ease);
+    z-index: 40;
+  }
+  .drawer-scrim.open { opacity: 1; pointer-events: auto; }
+
+  .drawer {
+    position: fixed;
+    top: 0; right: 0;
+    width: 460px;
+    max-width: 92vw;
+    height: 100vh;
+    background: #2c3538;
+    color: #a0a9ac;
+    transform: translateX(100%);
+    transition: transform 360ms var(--kc-ease);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    padding: 24px 28px 18px;
+    border-bottom: 1px solid rgba(160,169,172,0.16);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .drawer-title {
+    font-family: var(--kc-font-display);
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: #ecdfc7;
+    margin: 0 0 4px;
+  }
+  .drawer-sub {
+    font-family: var(--kc-font-mono);
+    font-size: 12px;
+    color: rgba(160,169,172,0.72);
+    margin: 0;
+  }
+  .drawer-body {
+    padding: 20px 28px 28px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .fav {
+    aspect-ratio: 1 / 1;
+    background: rgba(160,169,172,0.06);
+    border: 1px solid rgba(160,169,172,0.16);
+    border-radius: 12px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: all 200ms var(--kc-ease);
+  }
+  .fav:hover { border-color: #a0a9ac; transform: translateY(-2px); }
+  .fav svg { width: 100%; height: 100%; display: block; }
+  .fav-del {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    background: rgba(44,53,56,0.92);
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: rgba(160,169,172,0.85);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+  }
+  .fav:hover .fav-del { display: flex; }
+  .fav-del:hover { color: #ecdfc7; }
+
+  .fav-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 22px 12px;
+    color: rgba(160,169,172,0.62);
+    font-size: 12px;
+    border: 1px dashed rgba(160,169,172,0.22);
+    border-radius: 12px;
+    background: transparent;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--kc-cream);
+    color: var(--kc-ink);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 320ms var(--kc-ease);
+    z-index: 100;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Seed pill */
+  .seed-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(160,169,172,0.10);
+    color: rgba(160,169,172,0.85);
+    font-family: var(--kc-font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  /* Sun icon */
+  .sun-icon {
+    width: 22px; height: 22px;
+    color: var(--kc-rose);
+  }
+
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: minmax(50vh, 1fr) auto; }
+    .panel { border-left: none; border-top: 1px solid #2c3538; }
+  }
+</style>
+</head>
+<body class="kc">
+
+<div class="app">
+
+  <!-- ============ STAGE ============ -->
+  <section class="stage">
+    <div class="stage-header">
+      <a class="brand-mark" href="#" aria-label="Kaia Cacao">
+        <svg viewBox="0 0 614.6 336.2" xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-hidden="true">
+          <path d="M368.8,204.3l83.9-145.4c-2.7-1.6-5.3-3.2-8.1-4.8l-84.1,145.6c2.8,1.4,5.5,2.9,8.2,4.5Z"/>
+          <path d="M307.4,187.2c1.6,0,3.1,0,4.7.1V18.1c-1.6,0-3.1,0-4.7,0s-3.1,0-4.7,0v169.2c1.6,0,3.1-.1,4.7-.1Z"/>
+          <path d="M341.5,192.2l43.7-163.1c-3-.9-6-1.7-9-2.5l-43.7,163.2c3.1.7,6.1,1.4,9.1,2.3Z"/>
+          <path d="M392.3,223.1l117.6-117.6c-2.1-2.3-4.3-4.5-6.5-6.7l-117.9,117.9c2.3,2.1,4.6,4.2,6.8,6.4Z"/>
+          <path d="M422,275.5l156.8-42c-.7-3-1.5-6.1-2.3-9.1l-157.2,42.1c1,2.9,1.9,5.9,2.7,9Z"/>
+          <path d="M410.4,247.2l142.5-82.2c-1.5-2.8-3-5.5-4.6-8.2l-142.8,82.5c1.7,2.6,3.4,5.2,4.9,8Z"/>
+          <path d="M282.3,189.9L238.6,26.6c-3,.8-6,1.6-9,2.5l43.7,163.1c3-.9,6-1.7,9.1-2.3Z"/>
+          <path d="M195.5,266.5l-157.2-42.1c-.8,3-1.6,6-2.3,9.1l156.8,42c.8-3,1.7-6,2.7-9Z"/>
+          <path d="M254.1,199.8L170.1,54.2c-2.7,1.5-5.4,3.1-8.1,4.8l83.9,145.4c2.7-1.6,5.4-3.1,8.2-4.5Z"/>
+          <path d="M425.5,296.7c.2,3,.3,6,.3,9h159.9c0-3,.2-6,.2-9h-160.4Z"/>
+          <path d="M189.2,296.7H28.8c0,3,0,6,.2,9h159.9c0-3,.1-6.1.3-9Z"/>
+          <path d="M229.2,216.6l-117.9-117.9c-2.2,2.2-4.4,4.4-6.5,6.7l117.6,117.6c2.2-2.2,4.4-4.4,6.8-6.4Z"/>
+          <path d="M209.2,239.3l-142.8-82.5c-1.6,2.7-3.1,5.4-4.6,8.2l142.5,82.2c1.5-2.7,3.2-5.4,4.9-8Z"/>
+        </svg>
+      </a>
+      <div class="brand">
+        <div class="brand-title">THE RAY MAKER</div>
+        <div class="brand-tagline">Shape light · Save the rays you love</div>
+      </div>
+      <button class="fav-trigger" id="fav-trigger" title="Favorites">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span>Favorites</span>
+        <span class="fav-trigger-count" id="fav-trigger-count">0</span>
+      </button>
+    </div>
+
+    <div class="stage-inner">
+      <svg id="canvas" viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <!-- Palette controls anchored at stage corners -->
+    <div class="stage-palette stage-palette--bg">
+      <p class="stage-palette-label">Background</p>
+      <div class="colorchips" id="bg-swatches"></div>
+      <p class="stage-palette-hex" id="bg-hex">#ecdfc7</p>
+    </div>
+
+    <div class="stage-palette stage-palette--ray">
+      <p class="stage-palette-label">Ray</p>
+      <div class="colorchips" id="colorchips"></div>
+      <p class="stage-palette-hex" id="color-hex">#d9a597</p>
+    </div>
+
+  </section>
+
+  <!-- ============ PANEL ============ -->
+  <aside class="panel">
+    <div class="panel-body">
+
+      <div class="group">
+        <p class="group-label">Shape</p>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Rays</span>
+            <span class="control-value" id="v-rays">120</span>
+          </div>
+          <input type="range" id="rays" min="24" max="360" step="1" value="120">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Energy</span>
+            <span class="control-value" id="v-energy">0.45</span>
+          </div>
+          <input type="range" id="energy" min="0" max="1" step="0.01" value="0.45">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Lobes</span>
+            <span class="control-value" id="v-lobes">3</span>
+          </div>
+          <input type="range" id="lobes" min="1" max="9" step="1" value="3">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Texture</span>
+            <span class="control-value" id="v-texture">0.30</span>
+          </div>
+          <input type="range" id="texture" min="0" max="1" step="0.01" value="0.30">
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-label">Geometry</p>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Inner radius</span>
+            <span class="control-value" id="v-inner">22%</span>
+          </div>
+          <input type="range" id="inner" min="0.05" max="0.5" step="0.005" value="0.22">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Reach</span>
+            <span class="control-value" id="v-reach">88%</span>
+          </div>
+          <input type="range" id="reach" min="0.4" max="0.98" step="0.005" value="0.88">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Rotation</span>
+            <span class="control-value" id="v-rotation">0°</span>
+          </div>
+          <input type="range" id="rotation" min="0" max="360" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-label">Stroke</p>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Weight</span>
+            <span class="control-value" id="v-weight">2.0</span>
+          </div>
+          <input type="range" id="weight" min="0.5" max="8" step="0.1" value="2">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Taper</span>
+            <span class="control-value" id="v-taper">0.00</span>
+          </div>
+          <input type="range" id="taper" min="-1" max="1" step="0.01" value="0">
+        </div>
+      </div>
+
+    </div><!-- /panel-body -->
+
+    <!-- Sticky generate footer -->
+    <div class="panel-footer">
+      <div class="btn-row" style="margin-bottom: 10px;">
+        <button class="btn btn--primary" id="randomize">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M21 16v5h-5"/><path d="M3 16v5h5"/><path d="M21 3 3 21"/></svg>
+          Randomize
+        </button>
+        <button class="btn btn--icon" id="reset" title="Reset to defaults">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="save" style="flex:1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Save
+        </button>
+        <button class="btn btn--primary" id="vectorize" style="flex:1.4">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Vectorize
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Favorites drawer -->
+  <div class="drawer-scrim" id="drawer-scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 class="drawer-title">Favorites</h2>
+        <p class="drawer-sub" id="fav-count">0 saved</p>
+      </div>
+      <button class="btn btn--icon" id="drawer-close" title="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <div class="favorites-grid" id="favorites">
+        <div class="fav-empty">Tap Save to keep a sunburst here.</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Seedable PRNG (mulberry32)
+   ============================================================ */
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = seed;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/* ============================================================
+   State
+   ============================================================ */
+const PALETTE = [
+  { name: 'Ink',     value: '#2c3538' },
+  { name: 'Teal',    value: '#405358' },
+  { name: 'Stone',   value: '#a0a9ac' },
+  { name: 'Rose',    value: '#d9a597' },
+  { name: 'Cream',   value: '#ecdfc7' },
+  { name: 'Amber',   value: '#f2b66f' },
+];
+
+const BACKGROUNDS = [
+  '#ecdfc7', '#f5e9bf', '#dfeed4', '#f4e4dc', '#405358', '#2c3538', '#ffffff',
+];
+
+const DEFAULT_STATE = {
+  rays: 120,
+  energy: 0.45,
+  lobes: 3,
+  texture: 0.30,
+  inner: 0.22,
+  reach: 0.88,
+  rotation: 0,
+  weight: 2.0,
+  taper: 0.0,
+  color: '#d9a597',
+  bg: '#ecdfc7',
+  seed: 1234,
+};
+
+let state = { ...DEFAULT_STATE };
+
+/* ============================================================
+   Render
+   ============================================================ */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const canvas = document.getElementById('canvas');
+const stageEl = document.querySelector('.stage');
+
+// Compute relative luminance (0..1) of a hex color
+function hexLuminance(hex) {
+  const m = hex.replace('#','').match(/.{2}/g);
+  if (!m) return 1;
+  const [r, g, b] = m.map(h => parseInt(h, 16) / 255);
+  const lin = c => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+// Apply the chosen background to the stage element and toggle dark mode
+function applyStageBackground(hex) {
+  if (!stageEl) return;
+  stageEl.style.background = hex;
+  const dark = hexLuminance(hex) < 0.4;
+  stageEl.classList.toggle('stage--dark', dark);
+}
+
+function shapeRadius(theta, s) {
+  // theta in radians; returns 0..1 multiplier on reach
+  const rng = mulberry32(s.seed);
+  // pre-build harmonics
+  if (!shapeRadius._cache || shapeRadius._cache.seed !== s.seed) {
+    const harms = [];
+    const baseRng = mulberry32(s.seed);
+    // 4 low-frequency harmonics
+    for (let i = 0; i < 4; i++) {
+      harms.push({
+        f: Math.max(1, Math.round(s.lobes * (0.5 + baseRng() * 1.6))),
+        a: baseRng(),
+        p: baseRng() * Math.PI * 2,
+      });
+    }
+    // 2 high-frequency for texture
+    const hi = [];
+    for (let i = 0; i < 2; i++) {
+      hi.push({
+        f: Math.round(8 + baseRng() * 16),
+        a: baseRng(),
+        p: baseRng() * Math.PI * 2,
+      });
+    }
+    shapeRadius._cache = { seed: s.seed, harms, hi };
+  }
+  const { harms, hi } = shapeRadius._cache;
+
+  // Combine harmonics, normalized
+  let sum = 0, weight = 0;
+  for (const h of harms) {
+    sum += h.a * Math.sin(theta * h.f + h.p);
+    weight += h.a;
+  }
+  const lowFreq = weight ? sum / weight : 0; // ~ -1..1
+
+  let texSum = 0, texW = 0;
+  for (const h of hi) {
+    texSum += h.a * Math.sin(theta * h.f + h.p);
+    texW += h.a;
+  }
+  const highFreq = texW ? texSum / texW : 0;
+
+  // Energy controls amplitude of low-freq deformation; texture for high-freq
+  const deform = lowFreq * s.energy * 0.45 + highFreq * s.texture * 0.06;
+  return 1 + deform; // multiplier; ~1 with wobble
+}
+
+function render() {
+  // viewBox is -500..500
+  const VB = 500;
+  const reach = state.reach * VB;        // outer max radius
+  const innerR = state.inner * VB;
+  const rot = state.rotation * Math.PI / 180;
+
+  // clear
+  while (canvas.firstChild) canvas.removeChild(canvas.firstChild);
+
+  // background is now on the .stage element itself — sync it here
+  applyStageBackground(state.bg);
+
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('stroke', state.color);
+  g.setAttribute('stroke-linecap', 'round');
+  g.setAttribute('fill', 'none');
+  canvas.appendChild(g);
+
+  const N = Math.round(state.rays);
+  for (let i = 0; i < N; i++) {
+    const t = (i / N) * Math.PI * 2 + rot;
+    const mult = shapeRadius(t, state);
+    const r = reach * mult;
+    if (r <= innerR) continue;
+    const x1 = Math.cos(t) * innerR;
+    const y1 = Math.sin(t) * innerR;
+    const x2 = Math.cos(t) * r;
+    const y2 = Math.sin(t) * r;
+
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', x1.toFixed(2));
+    line.setAttribute('y1', y1.toFixed(2));
+    line.setAttribute('x2', x2.toFixed(2));
+    line.setAttribute('y2', y2.toFixed(2));
+
+    let w = state.weight;
+    if (state.taper !== 0) {
+      // taper: scale by length relative to reach
+      const lenFactor = (r - innerR) / (reach - innerR);
+      w = state.weight * (1 + state.taper * (lenFactor - 0.5) * 1.4);
+      w = Math.max(0.2, w);
+    }
+    line.setAttribute('stroke-width', w.toFixed(2));
+    g.appendChild(line);
+  }
+}
+
+function renderTo(svgEl, s, size = 240) {
+  // Render a thumbnail SVG inline
+  const VB = 500;
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  svgEl.setAttribute('viewBox', `${-VB} ${-VB} ${VB*2} ${VB*2}`);
+
+  const bg = document.createElementNS(SVG_NS, 'rect');
+  bg.setAttribute('x', -VB); bg.setAttribute('y', -VB);
+  bg.setAttribute('width', VB*2); bg.setAttribute('height', VB*2);
+  bg.setAttribute('fill', s.bg);
+  svgEl.appendChild(bg);
+
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('stroke', s.color);
+  g.setAttribute('stroke-linecap', 'round');
+  g.setAttribute('fill', 'none');
+  svgEl.appendChild(g);
+
+  const reach = s.reach * VB;
+  const innerR = s.inner * VB;
+  const rot = s.rotation * Math.PI / 180;
+  const N = Math.round(s.rays);
+
+  // recompute cache for this seed
+  shapeRadius._cache = null;
+  for (let i = 0; i < N; i++) {
+    const t = (i / N) * Math.PI * 2 + rot;
+    const mult = shapeRadius(t, s);
+    const r = reach * mult;
+    if (r <= innerR) continue;
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', (Math.cos(t)*innerR).toFixed(2));
+    line.setAttribute('y1', (Math.sin(t)*innerR).toFixed(2));
+    line.setAttribute('x2', (Math.cos(t)*r).toFixed(2));
+    line.setAttribute('y2', (Math.sin(t)*r).toFixed(2));
+    let w = s.weight;
+    if (s.taper !== 0) {
+      const lenFactor = (r - innerR) / (reach - innerR);
+      w = s.weight * (1 + s.taper * (lenFactor - 0.5) * 1.4);
+      w = Math.max(0.2, w);
+    }
+    line.setAttribute('stroke-width', w.toFixed(2));
+    g.appendChild(line);
+  }
+  // restore main cache
+  shapeRadius._cache = null;
+}
+
+/* ============================================================
+   Slider plumbing
+   ============================================================ */
+function paintTrack(input) {
+  const min = +input.min, max = +input.max, val = +input.value;
+  const p = ((val - min) / (max - min)) * 100;
+  input.style.setProperty('--p', p + '%');
+}
+
+const controls = [
+  ['rays',     'rays',     v => `${v}`,                v => Math.round(v)],
+  ['energy',   'energy',   v => (+v).toFixed(2),       v => +v],
+  ['lobes',    'lobes',    v => `${v}`,                v => Math.round(v)],
+  ['texture',  'texture',  v => (+v).toFixed(2),       v => +v],
+  ['inner',    'inner',    v => `${Math.round(v*100)}%`, v => +v],
+  ['reach',    'reach',    v => `${Math.round(v*100)}%`, v => +v],
+  ['rotation', 'rotation', v => `${Math.round(v)}°`,   v => +v],
+  ['weight',   'weight',   v => (+v).toFixed(1),       v => +v],
+  ['taper',    'taper',    v => (+v).toFixed(2),       v => +v],
+];
+
+function bindControls() {
+  controls.forEach(([id, key, fmt, parse]) => {
+    const el = document.getElementById(id);
+    const out = document.getElementById('v-' + id);
+    el.addEventListener('input', () => {
+      state[key] = parse(el.value);
+      out.textContent = fmt(el.value);
+      paintTrack(el);
+      // changing lobes invalidates harmonic cache (lobes seeds harmonic freq)
+      if (key === 'lobes') shapeRadius._cache = null;
+      render();
+    });
+    paintTrack(el);
+    out.textContent = fmt(el.value);
+  });
+}
+
+function syncControlsFromState() {
+  controls.forEach(([id, key, fmt]) => {
+    const el = document.getElementById(id);
+    el.value = state[key];
+    document.getElementById('v-' + id).textContent = fmt(state[key]);
+    paintTrack(el);
+  });
+  // color
+  document.querySelectorAll('#colorchips .stage-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.color === state.color);
+  });
+  document.getElementById('color-hex').textContent = state.color;
+  // bg
+  document.querySelectorAll('#bg-swatches .stage-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.bg === state.bg);
+  });
+  document.getElementById('bg-hex').textContent = state.bg;
+}
+
+/* ============================================================
+   Color + background swatches
+   ============================================================ */
+function buildColorChips() {
+  const wrap = document.getElementById('colorchips');
+  wrap.innerHTML = '';
+  PALETTE.forEach(p => {
+    const el = document.createElement('button');
+    el.className = 'stage-chip' + (p.value === state.color ? ' active' : '');
+    el.style.background = p.value;
+    el.title = p.name;
+    el.dataset.color = p.value;
+    el.addEventListener('click', () => {
+      state.color = p.value;
+      document.querySelectorAll('#colorchips .stage-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('color-hex').textContent = p.value;
+      render();
+    });
+    wrap.appendChild(el);
+  });
+}
+function buildBgSwatches() {
+  const wrap = document.getElementById('bg-swatches');
+  wrap.innerHTML = '';
+  BACKGROUNDS.forEach(bg => {
+    const el = document.createElement('button');
+    el.className = 'stage-chip' + (bg === state.bg ? ' active' : '');
+    el.style.background = bg;
+    el.dataset.bg = bg;
+    el.title = bg;
+    el.addEventListener('click', () => {
+      state.bg = bg;
+      document.querySelectorAll('#bg-swatches .stage-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('bg-hex').textContent = bg;
+      render();
+    });
+    wrap.appendChild(el);
+  });
+}
+
+/* ============================================================
+   Randomize / reset
+   ============================================================ */
+function randomize() {
+  const r = Math.random;
+  state.seed = Math.floor(r() * 999999);
+  state.rays = Math.round(60 + r() * 240);
+  state.energy = 0.15 + r() * 0.7;
+  state.lobes = 1 + Math.floor(r() * 8);
+  state.texture = r() * 0.6;
+  state.inner = 0.12 + r() * 0.25;
+  state.reach = 0.7 + r() * 0.25;
+  state.rotation = Math.floor(r() * 360);
+  state.weight = 1 + r() * 4;
+  state.taper = (r() - 0.5) * 1.6;
+  // 70% keep current color; 30% pick random palette
+  if (r() < 0.3) state.color = PALETTE[Math.floor(r() * PALETTE.length)].value;
+  shapeRadius._cache = null;
+  syncControlsFromState();
+  render();
+  // pulse the canvas
+  canvas.animate(
+    [{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }],
+    { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+  );
+}
+function resetState() {
+  state = { ...DEFAULT_STATE };
+  shapeRadius._cache = null;
+  syncControlsFromState();
+  render();
+  toast('Reset');
+}
+
+/* ============================================================
+   Vectorize / export
+   ============================================================ */
+function buildExportSVG(s, opts = {}) {
+  const VB = 500;
+  shapeRadius._cache = null;
+  const reach = s.reach * VB;
+  const innerR = s.inner * VB;
+  const rot = s.rotation * Math.PI / 180;
+  const N = Math.round(s.rays);
+  const includeBg = opts.includeBg !== false;
+
+  let body = '';
+  for (let i = 0; i < N; i++) {
+    const t = (i / N) * Math.PI * 2 + rot;
+    const mult = shapeRadius(t, s);
+    const r = reach * mult;
+    if (r <= innerR) continue;
+    const x1 = (Math.cos(t)*innerR).toFixed(2);
+    const y1 = (Math.sin(t)*innerR).toFixed(2);
+    const x2 = (Math.cos(t)*r).toFixed(2);
+    const y2 = (Math.sin(t)*r).toFixed(2);
+    let w = s.weight;
+    if (s.taper !== 0) {
+      const lenFactor = (r - innerR) / (reach - innerR);
+      w = Math.max(0.2, s.weight * (1 + s.taper * (lenFactor - 0.5) * 1.4));
+    }
+    body += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${w.toFixed(2)}"/>`;
+  }
+  shapeRadius._cache = null;
+
+  const bgEl = includeBg
+    ? `<rect x="${-VB}" y="${-VB}" width="${VB*2}" height="${VB*2}" fill="${s.bg}"/>`
+    : '';
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-VB} ${-VB} ${VB*2} ${VB*2}" width="1000" height="1000">
+  <title>Kaia Cacao Sunburst</title>
+  ${bgEl}
+  <g stroke="${s.color}" stroke-linecap="round" fill="none">${body}</g>
+</svg>`;
+}
+
+function vectorize() {
+  const svg = buildExportSVG(state);
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const seed = String(state.seed).padStart(4, '0');
+  a.href = url;
+  a.download = `kaia-sunburst-${seed}.svg`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Vectorized · SVG downloaded');
+}
+
+/* ============================================================
+   Favorites (localStorage)
+   ============================================================ */
+const FAV_KEY = 'kaia-sunburst-favorites-v1';
+
+function loadFavorites() {
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveFavorites(list) {
+  localStorage.setItem(FAV_KEY, JSON.stringify(list));
+}
+function addFavorite() {
+  const list = loadFavorites();
+  const snap = JSON.parse(JSON.stringify(state));
+  snap._t = Date.now();
+  list.unshift(snap);
+  if (list.length > 24) list.length = 24;
+  saveFavorites(list);
+  renderFavorites();
+  openDrawer();
+  toast('Saved to favorites');
+}
+function deleteFavorite(idx) {
+  const list = loadFavorites();
+  list.splice(idx, 1);
+  saveFavorites(list);
+  renderFavorites();
+}
+function loadFavorite(idx) {
+  const list = loadFavorites();
+  const f = list[idx];
+  if (!f) return;
+  state = { ...DEFAULT_STATE, ...f };
+  delete state._t;
+  shapeRadius._cache = null;
+  syncControlsFromState();
+  render();
+  closeDrawer();
+  toast('Loaded');
+}
+
+function renderFavorites() {
+  const list = loadFavorites();
+  const wrap = document.getElementById('favorites');
+  const trigger = document.getElementById('fav-trigger');
+  const triggerCount = document.getElementById('fav-trigger-count');
+  document.getElementById('fav-count').textContent =
+    list.length === 0 ? '0 saved' :
+    list.length === 1 ? '1 saved' : `${list.length} saved`;
+  triggerCount.textContent = list.length;
+  trigger.classList.toggle('has-items', list.length > 0);
+
+  wrap.innerHTML = '';
+  if (list.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'fav-empty';
+    empty.textContent = 'Tap Save to keep a sunburst here.';
+    wrap.appendChild(empty);
+    return;
+  }
+
+  list.forEach((f, idx) => {
+    const card = document.createElement('div');
+    card.className = 'fav';
+    card.title = `Seed ${f.seed} · ${f.rays} rays`;
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    card.appendChild(svg);
+
+    const del = document.createElement('button');
+    del.className = 'fav-del';
+    del.innerHTML = '×';
+    del.title = 'Remove';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteFavorite(idx);
+    });
+    card.appendChild(del);
+
+    card.addEventListener('click', () => loadFavorite(idx));
+    wrap.appendChild(card);
+    // render after appended (so it has a size)
+    renderTo(svg, f);
+  });
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   Wire up
+   ============================================================ */
+buildColorChips();
+buildBgSwatches();
+bindControls();
+render();
+renderFavorites();
+
+document.getElementById('randomize').addEventListener('click', randomize);
+document.getElementById('reset').addEventListener('click', resetState);
+document.getElementById('vectorize').addEventListener('click', vectorize);
+document.getElementById('save').addEventListener('click', addFavorite);
+
+// Drawer
+const drawer = document.getElementById('drawer');
+const scrim  = document.getElementById('drawer-scrim');
+function openDrawer() {
+  drawer.classList.add('open');
+  scrim.classList.add('open');
+  drawer.setAttribute('aria-hidden', 'false');
+}
+function closeDrawer() {
+  drawer.classList.remove('open');
+  scrim.classList.remove('open');
+  drawer.setAttribute('aria-hidden', 'true');
+}
+document.getElementById('fav-trigger').addEventListener('click', openDrawer);
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+scrim.addEventListener('click', closeDrawer);
+
+// Spacebar = randomize
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    randomize();
+  }
+  if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    addFavorite();
+  }
+  if (e.key === 'Escape' && drawer.classList.contains('open')) {
+    closeDrawer();
+  }
+});
+</script>
+</body>
+</html>
